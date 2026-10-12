@@ -4,6 +4,7 @@ import { paraCentavos, paraReais } from '../lib/dinheiro.js';
 import * as erp from '../erp/cliente.js';
 import { buscarEndereco, serializarEndereco } from './enderecoService.js';
 import { lerCarrinho, limparCarrinho } from './carrinhoService.js';
+import { obterCarrinhoAtivo, resolverCarrinho } from './carrinhosService.js';
 
 function enderecoEmUmaLinha(e) {
   const complemento = e.complemento ? `, ${e.complemento}` : '';
@@ -17,7 +18,11 @@ function enderecoEmUmaLinha(e) {
  * numero <-> usuario, porque o ERP conhece "Fulano, CPF X", nao "a conta
  * fulano@email.com". Sem esse vinculo nao daria para montar "meus pedidos".
  */
-export async function finalizarPedido(usuario, enderecoId, observacao, db = obterBanco()) {
+export async function finalizarPedido(usuario, enderecoId, observacao, db = obterBanco(), carrinhoId = null) {
+  const destino = resolverCarrinho(usuario.id, carrinhoId, db);
+  if (carrinhoId != null && destino.id !== obterCarrinhoAtivo(usuario.id, db).id) {
+    throw ApiError.conflito('CARRINHO_ALTERADO', 'O carrinho ativo mudou. Confira os itens antes de fechar o pedido.');
+  }
   const enderecoLinha = buscarEndereco(usuario.id, enderecoId, db);
   if (!enderecoLinha) {
     throw ApiError.naoProcessavel('Nao foi possivel fechar o pedido.', [
@@ -25,7 +30,7 @@ export async function finalizarPedido(usuario, enderecoId, observacao, db = obte
     ]);
   }
 
-  const carrinho = await lerCarrinho(usuario.id, db);
+  const carrinho = await lerCarrinho(usuario.id, db, destino.id);
 
   if (carrinho.itens.length === 0) {
     throw ApiError.conflito('CARRINHO_VAZIO', 'Seu carrinho esta vazio.');
@@ -78,7 +83,11 @@ export async function finalizarPedido(usuario, enderecoId, observacao, db = obte
         agoraISO(),
       );
 
-      limparCarrinho(usuario.id, db);
+      // Trocar ou remover o carrinho em outra aba enquanto o ERP responde nao
+      // pode apagar outra lista nem impedir o registro local do pedido.
+      if (db.prepare('SELECT id FROM carrinhos WHERE id = ? AND usuario_id = ?').get(destino.id, usuario.id)) {
+        limparCarrinho(usuario.id, db, destino.id);
+      }
     })();
   } catch (erro) {
     console.error(

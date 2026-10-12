@@ -134,56 +134,94 @@ relatar algo que você viu conta contra.*/
 
 ### Como ficou
 
-*Descreva a solução em algumas linhas: o que a pessoa consegue fazer agora.*
+Adicionei a opção de criar, renomear, trocar e excluir carrinhos. O cliente
+pode manter, por exemplo, "Gol do João" e "Civic prata", cada um com suas peças
+e quantidades. O carrinho selecionado fica salvo para quando ele voltar.
 
-
+Os controles ficaram em `GerenciadorCarrinhos.jsx`, na tela do carrinho,
+inclusive quando ele está vazio. A exclusão pede confirmação. Também separei
+o `Modal.jsx` para usar tanto nessa confirmação quanto nas pendências de estoque.
 
 ### Modelagem
 
-*Como ficou no banco. Tabelas, colunas e relações que você criou ou alterou.*
+Antes, cada item estava ligado direto ao usuário. Agora, o usuário tem vários
+carrinhos e cada item pertence a um deles.
 
+| Tabela | Como ficou |
+|---|---|
+| `carrinhos` | Guarda `id`, `usuario_id`, `nome`, `criado_em` e `atualizado_em`. O nome tem até 80 caracteres e não pode se repetir para o mesmo usuário. |
+| `carrinhos_ativos` | Guarda `usuario_id` como chave primária e `carrinho_id`. Assim, cada usuário tem no máximo uma seleção salva. |
+| `carrinho_itens` | Troquei `usuario_id` por `carrinho_id`. A combinação única passou a ser carrinho + código do produto. A mesma peça pode estar em carrinhos diferentes com quantidades diferentes. |
 
+Escolhi guardar o ativo em uma tabela separada para trocar a seleção sem
+alterar os outros carrinhos. A chave composta de `carrinhos_ativos` também
+garante que o carrinho selecionado pertence ao usuário. Seria possível usar
+uma coluna `ativo` em `carrinhos`, mas ela precisaria de uma regra para impedir
+dois ativos ao mesmo tempo.
 
-*Mudanças no contrato da API — endpoints novos ou alterados:*
+![Modelo do banco com múltiplos carrinhos](image.png)
+
+### Migração dos dados existentes
+
+Atualizei `aplicarSchema()` em `backend/src/db/index.js` para aproveitar os
+dados que já estavam no banco. A função identifica a tabela antiga pela
+coluna `usuario_id`, cria um "Meu carrinho" para cada usuário e copia os itens
+para ele, mantendo IDs, códigos, quantidades e datas.
+
+A tabela antiga só é removida depois de conferir que todos os itens foram
+copiados. Isso roda em uma transação: se falhar, as mudanças são desfeitas.
+Usuários, endereços e pedidos existentes são mantidos.
+
+A função roda ao iniciar o backend e ao executar `npm run db:init`. A cópia
+dos itens antigos acontece só na primeira migração. Nas próximas vezes,
+`IF NOT EXISTS` e `WHERE NOT EXISTS` evitam duplicações. Em produção, é preciso
+fazer backup e parar o backend antigo antes da atualização, porque ele ainda
+consulta a coluna `usuario_id` dos itens.
+
+### APIs novas e alteradas
+
+Mantive as rotas juntas em `backend/src/routes/carrinho.js`. As operações de
+itens usam `criarRotasItensCarrinho()` nas duas versões da API, aproveitando
+as mesmas validações.
 
 | Método | Rota | O que faz |
 |---|---|---|
-| | | |
+| GET | `/api/carrinhos` | Lista os carrinhos do usuário, suas quantidades e o ID do ativo. |
+| POST | `/api/carrinhos` | Cria um carrinho com `{ "nome": "Gol do João" }` e já o seleciona. |
+| PATCH | `/api/carrinhos/:id` | Renomeia o carrinho, recebendo `nome`. |
+| PUT | `/api/carrinhos/:id/ativo` | Seleciona o carrinho para receber as próximas peças. |
+| DELETE | `/api/carrinhos/:id` | Exclui o carrinho e seus itens. |
+| GET | `/api/carrinhos/:id` | Retorna os itens, preços, total e pendências desse carrinho. |
+| POST | `/api/carrinhos/:id/itens` | Adiciona uma peça com `codigo_produto` e `quantidade`. |
+| PATCH | `/api/carrinhos/:id/itens/:codigo` | Altera a quantidade da peça nesse carrinho. |
+| DELETE | `/api/carrinhos/:id/itens/:codigo` | Remove a peça desse carrinho. |
+| DELETE | `/api/carrinhos/:id/itens` | Esvazia os itens e mantém o carrinho. |
+| POST | `/api/pedidos` | Passou a receber `carrinho_id` junto com `endereco_id` e `observacao`. Fecha o pedido do carrinho ativo informado. |
 
-### Decisões que o enunciado deixou abertas
+As rotas antigas `/api/carrinho`, `/api/carrinho/itens` e
+`/api/carrinho/itens/:codigo` continuam usando o carrinho ativo. O retorno do
+carrinho ganhou `id`, `nome`, `carrinhos` e `carrinho_ativo_id`.
 
-*Responda o que você decidiu e **por quê**. Não existe resposta certa; existe
-decisão pensada.*
+No frontend, atualizei `api/cliente.js` para enviar o ID nas operações de
+itens. No checkout, se `carrinho_id` não vier ou vier como `null`, o backend usa
+o ativo. Se vier um ID de outro usuário ou que não existe, retorna 404. Se
+o carrinho informado já não for o ativo, retorna 409 para o cliente conferir
+os itens antes de fechar o pedido.
 
-| Pergunta | Sua decisão | Motivo |
-|---|---|---|
-| Quantos carrinhos por pessoa? Tem limite? | | |
-| O que acontece ao apagar o carrinho ativo? | | |
-| Como o carrinho aparece na vitrine? | | |
-| E no celular? | | |
-| Qual carrinho vem selecionado ao entrar? | | |
-| O que acontece com os carrinhos após fechar um pedido? | | |
+
 
 ### Isolamento
 
-*O que impede o carrinho de um cliente aparecer para outro?*
+As rotas exigem login. Antes de ler ou alterar um carrinho, o serviço confere
+se o `id` pertence ao `usuario_id` da sessão. As consultas dos itens filtram
+por `carrinho_id`, então a quantidade de uma lista não altera a outra.
+
+O ID do destino é definido antes da consulta ao ERP e usado até o fim da
+operação. Trocar de carrinho enquanto a resposta demora não manda a peça para
+outra lista nem apaga outro carrinho no checkout. No frontend, trocar de conta
+descarta o estado anterior, e respostas antigas não substituem a seleção atual.
 
 
-
----
-
-## 5. Como testei
-
-*O que você fez para confirmar que funciona e que não quebrou nada. Teste
-manual conta — descreva o caminho que percorreu.*
-
-
-
-*Se escreveu testes automatizados, diga como rodar:*
-
-
-
----
 
 ## 6. Decisões e suposições
 

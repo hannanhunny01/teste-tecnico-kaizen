@@ -41,19 +41,35 @@ CREATE TABLE IF NOT EXISTS enderecos (
 
 CREATE INDEX IF NOT EXISTS idx_enderecos_usuario ON enderecos (usuario_id);
 
+CREATE TABLE IF NOT EXISTS carrinhos (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  usuario_id    INTEGER NOT NULL REFERENCES usuarios (id) ON DELETE CASCADE,
+  nome          TEXT NOT NULL COLLATE NOCASE CHECK (length(trim(nome)) BETWEEN 1 AND 80),
+  criado_em     TEXT NOT NULL,
+  atualizado_em TEXT NOT NULL,
+  UNIQUE (usuario_id, nome),
+  UNIQUE (id, usuario_id)
+);
+
+CREATE TABLE IF NOT EXISTS carrinhos_ativos (
+  usuario_id  INTEGER PRIMARY KEY REFERENCES usuarios (id) ON DELETE CASCADE,
+  carrinho_id INTEGER NOT NULL,
+  FOREIGN KEY (carrinho_id, usuario_id) REFERENCES carrinhos (id, usuario_id) ON DELETE CASCADE
+);
+
 -- Carrinho persistido: o cliente fecha o navegador e encontra tudo de volta.
 -- Guarda so o codigo do produto; preco e descricao vem do ERP na hora de ler,
 -- entao o carrinho nunca mostra preco velho.
 CREATE TABLE IF NOT EXISTS carrinho_itens (
   id             INTEGER PRIMARY KEY AUTOINCREMENT,
-  usuario_id     INTEGER NOT NULL REFERENCES usuarios (id) ON DELETE CASCADE,
+  carrinho_id    INTEGER NOT NULL REFERENCES carrinhos (id) ON DELETE CASCADE,
   codigo_produto TEXT    NOT NULL,
   quantidade     INTEGER NOT NULL CHECK (quantidade > 0),
   adicionado_em  TEXT    NOT NULL,
-  UNIQUE (usuario_id, codigo_produto)
+  UNIQUE (carrinho_id, codigo_produto)
 );
 
-CREATE INDEX IF NOT EXISTS idx_carrinho_usuario ON carrinho_itens (usuario_id);
+CREATE INDEX IF NOT EXISTS idx_carrinho_itens_carrinho ON carrinho_itens (carrinho_id);
 
 -- Vinculo com o pedido que vive no ERP.
 -- `endereco_entrega` e um snapshot em JSON: o ERP nao tem esse dado, e se o

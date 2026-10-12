@@ -8,7 +8,7 @@ import { Alerta, Botao, Carregando, EstadoVazio } from '../componentes/ui.jsx';
 export function Produto() {
   const { codigo } = useParams();
   const { autenticado } = useAuth();
-  const { adicionar } = useCarrinho();
+  const { carrinho, carregando: carregandoCarrinho, adicionar } = useCarrinho();
   const navegar = useNavigate();
 
   const [produto, setProduto] = useState(null);
@@ -141,6 +141,11 @@ export function Produto() {
           </p>
 
           {recado && <Alerta tipo={recado.tipo} className="mt-4">{recado.texto}</Alerta>}
+          {autenticado && carrinho.id && (
+            <p className="mt-4 text-sm text-tinta-600">
+              Carrinho ativo: <Link to="/carrinho" className="font-semibold text-marca-700 underline">{carrinho.nome}</Link>
+            </p>
+          )}
 
           <div className="mt-6 flex items-end gap-3">
             <div>
@@ -166,7 +171,7 @@ export function Produto() {
             <Botao
               tamanho="grande"
               className="flex-1"
-              disabled={semEstoque}
+              disabled={semEstoque || (autenticado && (carregandoCarrinho || !carrinho.id))}
               carregando={adicionando}
               onClick={adicionarAoCarrinho}
             >
