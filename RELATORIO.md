@@ -66,12 +66,15 @@ produtos diferentes estão no carrinho. O ícone e o resumo já usam
 
 | | |
 |---|---|
-| **Causa** | |
-| **Como reproduzi** | |
-| **Arquivos alterados** | |
-| **Como validei a correção** | |
+| **Causa** | A busca mantinha a página anterior na URL. Se os resultados da pesquisa tinham menos páginas, a consulta retornava vazia mesmo com produtos encontrados. O mesmo acontecia ao mudar os filtros. |
+| **Como reproduzi** | Acessar `/?pagina=2` e pesquisar "agua" olhando para requisição enviado apra backend.  A busca continuava pedindo a página 2, em vez de começar na primeira página dos resultados. |
+| **Arquivos alterados** | `frontend/src/componentes/Cabecalho.jsx` e `frontend/src/paginas/Catalogo.jsx`. |
+| **Como validei a correção** | Conferi as URLs geradas ao pesquisar, limpar a busca e mudar categoria ou filtro de estoque.  |
 
+Agora, pesquisar ou mudar um filtro remove `pagina` da URL e volta para a
+página 1. Os outros filtros continuam aplicados.
 
+Trecho revisado: `KZN-5D1E`.
 
 ### KZN-331 — Pedido saiu com o endereço errado
 
