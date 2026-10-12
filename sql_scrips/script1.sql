@@ -9,13 +9,16 @@ INSERT INTO usuarios (
 )
 VALUES (
   'Usuario Teste',
-  'teste123@example.com',
-  'scrypt$16384$8$1$CX3FjeOhrNzWOGCP5OMsLw==$l5jpsL+90lWvZQWjYs4SFKSB2+n6nkfLSb5oPSP+SWt12e8KYK0Cp2EWG4e6xQHFgoRkKqrnhmO0utF3KwMLzQ==',
+  'c@c.com',
+  'scrypt$16384$8$1$sRmMVyq04NMzatzgkyFAQA==$X+hge1QR+gnWrRsOqwIbm6bT20BOdJXfssEffDASVoGA19KedhvfAyAOyW1zSBRgNOYJSWaw//K6SxTP8zakgA==',
   '00000000000',
   NULL,
   strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
   strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-);
+)
+ON CONFLICT (email) DO UPDATE SET
+  senha_hash = excluded.senha_hash,
+  atualizado_em = excluded.atualizado_em;
 
 INSERT INTO enderecos (
   usuario_id, apelido, cep, logradouro, numero,

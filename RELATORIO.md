@@ -52,12 +52,15 @@ Trecho revisado: `KZN-7F3A`.
 
 | | |
 |---|---|
-| **Causa** | |
-| **Como reproduzi** | |
-| **Arquivos alterados** | |
-| **Como validei a correção** | |
+| **Causa** | `quantidade_pecas` usava `itens.length`, contando os produtos diferentes sem considerar quantas unidades havia de cada um. |
+| **Como reproduzi** | Carrinho com dois produtos, um com 3 unidades e outro com 4. O contador mostrava 2, embora houvesse 7 peças. |
+| **Arquivos alterados** | `backend/src/services/carrinhoService.js`. |
+| **Como validei a correção** | Conferi o retorno do serviço com 3 + 4 unidades: retornou 7 peças. Também conferi o carrinho vazio, que retornou zero. |
 
-
+Agora, `quantidade_pecas` soma as unidades de cada produto. Mantive
+`quantidade_itens` e adicionei `quantidade_produtos` para informar quantos
+produtos diferentes estão no carrinho. O ícone e o resumo já usam
+`quantidade_pecas`.
 
 ### KZN-325 — Busca diz que não encontrou peça que existe
 
