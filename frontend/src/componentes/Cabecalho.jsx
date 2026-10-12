@@ -88,6 +88,7 @@ export function Cabecalho() {
 
               <Link
                 to="/carrinho"
+                title={carrinho.nome || 'Carrinho'}
                 className="relative rounded-lg px-3 py-2 text-sm font-medium text-tinta-600 hover:bg-tinta-100"
               >
                 Carrinho

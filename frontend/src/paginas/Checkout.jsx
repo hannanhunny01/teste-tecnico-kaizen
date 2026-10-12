@@ -50,7 +50,11 @@ export function Checkout() {
     setEnviando(true);
 
     try {
-      const resposta = await api.pedidos.criar({ endereco_id: enderecoId, observacao });
+      const resposta = await api.pedidos.criar({
+        carrinho_id: carrinho.id,
+        endereco_id: enderecoId,
+        observacao,
+      });
       await recarregar();
       navegar(`/pedidos/${resposta.dados.numero}`, { replace: true, state: { novo: true } });
     } catch (falha) {
@@ -165,6 +169,7 @@ export function Checkout() {
           <h2 className="text-sm font-semibold uppercase tracking-wide text-tinta-500">
             Seu pedido
           </h2>
+          <p className="mt-1 break-words text-sm font-medium text-tinta-800">{carrinho.nome}</p>
 
           <ul className="mt-4 space-y-3 text-sm">
             {carrinho.itens.map((item) => (

@@ -76,6 +76,10 @@ async function requisitar(caminho, { metodo = 'GET', corpo, parametros } = {}) {
   return json;
 }
 
+function caminhoCarrinho(id) {
+  return id == null ? '/carrinho' : `/carrinhos/${id}`;
+}
+
 export const api = {
   auth: {
     cadastrar: (dados) => requisitar('/auth/cadastro', { metodo: 'POST', corpo: dados }),
@@ -103,18 +107,28 @@ export const api = {
     produto: (codigo) => requisitar(`/catalogo/${encodeURIComponent(codigo)}`),
   },
 
+  carrinhos: {
+    listar: () => requisitar('/carrinhos'),
+    criar: (nome) => requisitar('/carrinhos', { metodo: 'POST', corpo: { nome } }),
+    renomear: (id, nome) => requisitar(`/carrinhos/${id}`, { metodo: 'PATCH', corpo: { nome } }),
+    ativar: (id) => requisitar(`/carrinhos/${id}/ativo`, { metodo: 'PUT' }),
+    remover: (id) => requisitar(`/carrinhos/${id}`, { metodo: 'DELETE' }),
+  },
+
   carrinho: {
-    ler: () => requisitar('/carrinho'),
-    adicionar: (codigo_produto, quantidade = 1) =>
-      requisitar('/carrinho/itens', { metodo: 'POST', corpo: { codigo_produto, quantidade } }),
-    alterar: (codigo, quantidade) =>
-      requisitar(`/carrinho/itens/${encodeURIComponent(codigo)}`, {
+    ler: (id) => requisitar(caminhoCarrinho(id)),
+    adicionar: (codigo_produto, quantidade = 1, id) =>
+      requisitar(`${caminhoCarrinho(id)}/itens`, {
+        metodo: 'POST', corpo: { codigo_produto, quantidade },
+      }),
+    alterar: (codigo, quantidade, id) =>
+      requisitar(`${caminhoCarrinho(id)}/itens/${encodeURIComponent(codigo)}`, {
         metodo: 'PATCH',
         corpo: { quantidade },
       }),
-    remover: (codigo) =>
-      requisitar(`/carrinho/itens/${encodeURIComponent(codigo)}`, { metodo: 'DELETE' }),
-    limpar: () => requisitar('/carrinho', { metodo: 'DELETE' }),
+    remover: (codigo, id) =>
+      requisitar(`${caminhoCarrinho(id)}/itens/${encodeURIComponent(codigo)}`, { metodo: 'DELETE' }),
+    limpar: (id) => requisitar(id == null ? '/carrinho' : `/carrinhos/${id}/itens`, { metodo: 'DELETE' }),
   },
 
   pedidos: {

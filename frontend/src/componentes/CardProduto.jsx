@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { dinheiro } from '../api/cliente.js';
 
-export function CardProduto({ produto, aoAdicionar, adicionando = false }) {
+export function CardProduto({ produto, aoAdicionar, adicionando = false, ocupado = false }) {
   const semEstoque = produto.estoque === 0;
 
   return (
@@ -53,7 +53,7 @@ export function CardProduto({ produto, aoAdicionar, adicionando = false }) {
         <button
           type="button"
           onClick={() => aoAdicionar(produto)}
-          disabled={semEstoque || adicionando}
+          disabled={semEstoque || adicionando || ocupado}
           className="mt-4 w-full rounded-lg bg-marca-700 px-4 py-2.5 text-sm font-semibold
             text-white transition-colors hover:bg-marca-800
             disabled:cursor-not-allowed disabled:bg-tinta-200 disabled:text-tinta-600"

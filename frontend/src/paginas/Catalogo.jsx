@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api/cliente.js';
 import { useAuth } from '../contextos/AuthContext.jsx';
 import { useCarrinho } from '../contextos/CarrinhoContext.jsx';
@@ -14,7 +14,7 @@ import { Alerta, Botao, Carregando, EstadoVazio, Paginacao } from '../componente
 export function Catalogo() {
   const [parametros, setParametros] = useSearchParams();
   const { autenticado } = useAuth();
-  const { adicionar } = useCarrinho();
+  const { carrinho, carregando: carregandoCarrinho, adicionar } = useCarrinho();
   const navegar = useNavigate();
 
   const [produtos, setProdutos] = useState([]);
@@ -165,6 +165,11 @@ export function Catalogo() {
         </p>
       )}
 
+      {autenticado && carrinho.id && (
+        <p className="text-sm text-tinta-600">
+          Carrinho ativo: <Link to="/carrinho" className="font-semibold text-marca-700 underline">{carrinho.nome}</Link>
+        </p>
+      )}
       {recado && <Alerta tipo={recado.tipo}>{recado.texto}</Alerta>}
       {erro && <Alerta tipo="erro" titulo="Não foi possível carregar o catálogo">{erro.message}</Alerta>}
 
@@ -189,6 +194,7 @@ export function Catalogo() {
                 produto={produto}
                 aoAdicionar={adicionarAoCarrinho}
                 adicionando={adicionandoCodigo === produto.codigo}
+                ocupado={autenticado && (carregandoCarrinho || !carrinho.id)}
               />
             ))}
           </div>
