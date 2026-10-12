@@ -39,6 +39,7 @@ export function Cabecalho() {
     const atuais = new URLSearchParams(window.location.search);
     if (termo) atuais.set('busca', termo);
     else atuais.delete('busca');
+    atuais.delete('pagina');
 
     navegar(`/?${atuais.toString()}`);
   }
