@@ -80,12 +80,13 @@ Trecho revisado: `KZN-5D1E`.
 
 | | |
 |---|---|
-| **Causa** | |
-| **Como reproduzi** | |
-| **Arquivos alterados** | |
-| **Como validei a correção** | |
+| **Causa** | Ao enviar o pedido, o checkout buscava o endereço principal e ignorava o endereço escolhido na tela. |
+| **Como reproduzi** | Casa como endereço principal e Oficina como outro endereço. Mesmo selecionando Oficina, o checkout enviava o ID da Casa. |
+| **Arquivos alterados** | `frontend/src/paginas/Checkout.jsx`. |
+| **Como validei a correção** | Simulei a seleção de Casa, Oficina e um novo endereço e conferi o `endereco_id` enviado em cada caso. |
 
-
+Agora, o pedido usa `enderecoId`, que guarda o endereço selecionado pelo
+cliente. O principal fica apenas como seleção inicial do checkout.
 
 ---
 
