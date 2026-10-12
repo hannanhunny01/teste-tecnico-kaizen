@@ -42,14 +42,17 @@ async function enriquecerItens(linhas) {
         };
       }
 
-      const totalCentavos = paraCentavos(produto.preco_unitario) * linha.quantidade;
-
       let problema = null;
       if (!produto.ativo) problema = 'Produto saiu de linha.';
       else if (produto.estoque === 0) problema = 'Sem estoque no momento.';
       else if (produto.estoque < linha.quantidade) {
         problema = `Restam apenas ${produto.estoque} em estoque.`;
       }
+
+      const disponivel = problema === null;
+      const totalCentavos = disponivel
+        ? paraCentavos(produto.preco_unitario) * linha.quantidade
+        : 0;
 
       return {
         codigo_produto: produto.codigo,
@@ -61,7 +64,7 @@ async function enriquecerItens(linhas) {
         preco_unitario: produto.preco_unitario,
         quantidade: linha.quantidade,
         estoque: produto.estoque,
-        disponivel: problema === null,
+        disponivel,
         problema,
         valor_total: paraReais(totalCentavos),
       };
