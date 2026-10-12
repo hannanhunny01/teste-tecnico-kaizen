@@ -36,14 +36,17 @@ que o cliente descreveu.
 
 | | |
 |---|---|
-| **Causa** | |
-| **Como reproduzi** | |
-| **Arquivos alterados** | |
-| **Como validei a correção** | |
+| **Causa** | O item sem estoque era marcado como indisponível, mas seu valor ainda entrava no total do carrinho. |
+| **Como reproduzi** | Radiador `ARR-7002` já no carrinho, com preço de R$ 684,00 e estoque zero no ERP. Esse valor era somado mesmo com o aviso de indisponibilidade. |
+| **Arquivos alterados** | `backend/src/services/carrinhoService.js` e `frontend/src/paginas/Carrinho.jsx`. Adicionei `frontend/src/componentes/ModalPendencias.jsx`. |
+| **Como validei a correção** | Adicionei um script SQL que permitia para incluir produtos  no carrinho sem estoque, e backend estava calculando o preço de itens que não estavam mais disponíveis também implementei um modal para alertar o usuário sobre esses produtos indisponíveis ou sem estoque |
 
-*Alguma observação? (algo que te surpreendeu, decisão que precisou tomar)*
+Agora, itens indisponíveis têm subtotal zero. O preço unitário e o aviso
+continuam visíveis. Também adicionei um modal que mostra os itens com pendência
+e permite removê-los antes de seguir para o checkout. O modal ficou em um
+componente separado, com os textos recebidos por props.
 
-
+Trecho revisado: `KZN-7F3A`.
 
 ### KZN-318 — Número no ícone do carrinho está errado
 

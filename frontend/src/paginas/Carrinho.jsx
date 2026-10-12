@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { dinheiro } from '../api/cliente.js';
 import { useCarrinho } from '../contextos/CarrinhoContext.jsx';
+import { ModalPendencias } from '../componentes/ModalPendencias.jsx';
 import { Alerta, Botao, Carregando, EstadoVazio } from '../componentes/ui.jsx';
 
 function LinhaItem({ item, aoAlterar, aoRemover, ocupado }) {
@@ -72,8 +73,18 @@ function LinhaItem({ item, aoAlterar, aoRemover, ocupado }) {
 
 export function Carrinho() {
   const { carrinho, carregando, alterar, remover, limpar } = useCarrinho();
+  const navegar = useNavigate();
   const [ocupado, setOcupado] = useState(false);
   const [erro, setErro] = useState(null);
+  const [mostrarPendencias, setMostrarPendencias] = useState(false);
+  const itensPendentes = carrinho.itens.filter((item) => !item.disponivel);
+  const codigosPendentes = itensPendentes.map((item) => item.codigo_produto).join(',');
+
+  useEffect(() => {
+    setMostrarPendencias(
+      !carregando && !carrinho.pronto_para_checkout && codigosPendentes.length > 0,
+    );
+  }, [carregando, carrinho.pronto_para_checkout, codigosPendentes]);
 
   async function executar(acao) {
     setOcupado(true);
@@ -103,6 +114,21 @@ export function Carrinho() {
 
   return (
     <div className="space-y-4">
+      {mostrarPendencias && itensPendentes.length > 0 && (
+        <ModalPendencias
+          titulo="Remova os itens com pendência"
+          descricao="Os itens abaixo não estão disponíveis na quantidade solicitada. Remova-os para continuar ao checkout."
+          textoRemover="Remover"
+          textoFechar="Voltar ao carrinho"
+          textoIndisponivel="Item indisponível no momento."
+          itens={itensPendentes}
+          ocupado={ocupado}
+          erro={erro}
+          aoRemover={(codigo) => executar(() => remover(codigo))}
+          aoFechar={() => setMostrarPendencias(false)}
+        />
+      )}
+
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-tinta-900">Carrinho</h1>
         <button
@@ -152,15 +178,21 @@ export function Carrinho() {
             </div>
           </dl>
 
-          <Link to="/checkout" className="mt-5 block">
-            <Botao
-              tamanho="grande"
-              className="w-full"
-              disabled={!carrinho.pronto_para_checkout || ocupado}
-            >
-              Fechar pedido
-            </Botao>
-          </Link>
+          <Botao
+            type="button"
+            tamanho="grande"
+            className="mt-5 w-full"
+            disabled={ocupado || carregando}
+            onClick={() => {
+              if (!carrinho.pronto_para_checkout) {
+                setMostrarPendencias(true);
+                return;
+              }
+              navegar('/checkout');
+            }}
+          >
+            Fechar pedido
+          </Botao>
 
           <Link
             to="/"
