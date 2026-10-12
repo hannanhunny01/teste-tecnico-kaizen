@@ -24,7 +24,7 @@ function ItemMenu({ para, children }) {
  * Se voce chegou ate aqui lendo o codigo, cite o identificador acima no seu
  * resumo de entrega - queremos saber que partes do projeto foram lidas de fato.
  */
-export function Cabecalho() {
+export function Cabecalho({ aoAbrirCarrinhoLateral, carrinhoLateralAberto = false }) {
   const { usuario, autenticado, sair } = useAuth();
   const { carrinho } = useCarrinho();
   const navegar = useNavigate();
@@ -86,22 +86,42 @@ export function Cabecalho() {
               <ItemMenu para="/pedidos">Pedidos</ItemMenu>
               <ItemMenu para="/perfil">Perfil</ItemMenu>
 
-              <Link
-                to="/carrinho"
-                title={carrinho.nome || 'Carrinho'}
-                className="relative rounded-lg px-3 py-2 text-sm font-medium text-tinta-600 hover:bg-tinta-100"
-              >
-                Carrinho
-                {carrinho.quantidade_pecas > 0 && (
-                  <span
-                    className="absolute -right-0.5 -top-0.5 grid size-5 place-items-center
-                      rounded-full bg-marca-700 text-[11px] font-bold text-white"
-                    aria-label={`${carrinho.quantidade_pecas} itens no carrinho`}
+              <div className="flex items-center">
+                <Link
+                  to="/carrinho"
+                  title={carrinho.nome || 'Carrinho'}
+                  className="relative rounded-lg px-3 py-2 text-sm font-medium text-tinta-600 hover:bg-tinta-100"
+                >
+                  Carrinho
+                  {carrinho.quantidade_pecas > 0 && (
+                    <span
+                      className="absolute -right-0.5 -top-0.5 grid size-5 place-items-center
+                        rounded-full bg-marca-700 text-[11px] font-bold text-white"
+                      aria-label={`${carrinho.quantidade_pecas} itens no carrinho`}
+                    >
+                      {carrinho.quantidade_pecas > 99 ? '99+' : carrinho.quantidade_pecas}
+                    </span>
+                  )}
+                </Link>
+                {aoAbrirCarrinhoLateral && (
+                  <button
+                    type="button"
+                    onClick={aoAbrirCarrinhoLateral}
+                    aria-label="Abrir carrinho lateral"
+                    aria-expanded={carrinhoLateralAberto}
+                    aria-controls={carrinhoLateralAberto ? 'carrinho-lateral' : undefined}
+                    aria-haspopup="dialog"
+                    title="Ver carrinho sem sair da vitrine"
+                    className="rounded-lg p-1.5 text-tinta-600 hover:bg-tinta-100"
                   >
-                    {carrinho.quantidade_pecas > 99 ? '99+' : carrinho.quantidade_pecas}
-                  </span>
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="size-4">
+                      <rect x="3" y="4" width="18" height="16" rx="2" />
+                      <path d="M15 4v16M6 8h5M6 12h5M6 16h3" />
+                    </svg>
+                  </button>
                 )}
-              </Link>
+              </div>
 
               <button
                 type="button"

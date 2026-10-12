@@ -142,6 +142,18 @@ Os controles ficaram em `GerenciadorCarrinhos.jsx`, na tela do carrinho,
 inclusive quando ele está vazio. A exclusão pede confirmação. Também separei
 o `Modal.jsx` para usar tanto nessa confirmação quanto nas pendências de estoque.
 
+### Carrinho na vitrine
+
+Adicionei um ícone ao lado de "Carrinho" no catálogo/busca. Ele abre um painel
+lateral para ver os itens, mudar quantidades, remover peças e trocar de carrinho
+sem perder busca, filtros ou página. O link normal foi mantido e o checkout
+continua fechando só o ativo.
+
+O painel ficou em `CarrinhoLateral.jsx`, com abertura em `App.jsx` e
+`Cabecalho.jsx`, usando o contexto e as APIs existentes.
+
+![Carrinho lateral na vitrine](image_sidebar.png)
+
 ### Modelagem
 
 Antes, cada item estava ligado direto ao usuário. Agora, o usuário tem vários

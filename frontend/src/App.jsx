@@ -1,5 +1,8 @@
-import { Link, Route, Routes } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, Route, Routes, useLocation } from 'react-router-dom';
 import { Cabecalho } from './componentes/Cabecalho.jsx';
+import { CarrinhoLateral } from './componentes/CarrinhoLateral.jsx';
+import { useAuth } from './contextos/AuthContext.jsx';
 import { RotaProtegida } from './componentes/RotaProtegida.jsx';
 import { Botao, EstadoVazio } from './componentes/ui.jsx';
 import { Cadastro } from './paginas/Cadastro.jsx';
@@ -23,6 +26,16 @@ function NaoEncontrada() {
 }
 
 export function App() {
+  const { pathname } = useLocation();
+  const { autenticado } = useAuth();
+  const [carrinhoLateralAberto, setCarrinhoLateralAberto] = useState(false);
+  const naVitrine = autenticado && pathname === '/';
+  const mostrarCarrinhoLateral = naVitrine && carrinhoLateralAberto;
+
+  useEffect(() => {
+    if (!naVitrine) setCarrinhoLateralAberto(false);
+  }, [naVitrine]);
+
   return (
     <div className="flex min-h-screen flex-col">
       <a
@@ -33,7 +46,10 @@ export function App() {
         Pular para o conteúdo
       </a>
 
-      <Cabecalho />
+      <Cabecalho
+        aoAbrirCarrinhoLateral={naVitrine ? () => setCarrinhoLateralAberto(true) : null}
+        carrinhoLateralAberto={mostrarCarrinhoLateral}
+      />
 
       <main id="conteudo" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
         <Routes>
@@ -53,6 +69,7 @@ export function App() {
           <Route path="*" element={<NaoEncontrada />} />
         </Routes>
       </main>
+      {mostrarCarrinhoLateral && <CarrinhoLateral aoFechar={() => setCarrinhoLateralAberto(false)} />}
 
       <footer className="border-t border-tinta-200 bg-white">
         <div className="mx-auto max-w-6xl px-4 py-6 text-sm text-tinta-500">
