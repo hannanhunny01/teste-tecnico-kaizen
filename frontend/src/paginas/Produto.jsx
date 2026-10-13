@@ -73,6 +73,7 @@ export function Produto() {
   }
 
   const semEstoque = produto.estoque === 0;
+  const quantidadeNoCarrinho = carrinho.itens.find((item) => item.codigo_produto === produto.codigo)?.quantidade ?? 0;
 
   return (
     <div className="space-y-6">
@@ -175,9 +176,15 @@ export function Produto() {
               carregando={adicionando}
               onClick={adicionarAoCarrinho}
             >
-              {semEstoque ? 'Indisponível' : 'Adicionar ao carrinho'}
+              {semEstoque ? 'Indisponível' : quantidadeNoCarrinho > 0 ? 'Adicionar mais' : 'Adicionar ao carrinho'}
             </Botao>
           </div>
+
+          {quantidadeNoCarrinho > 0 && (
+            <p className="mt-3 text-sm font-semibold text-marca-700" aria-live="polite">
+              {quantidadeNoCarrinho} no carrinho
+            </p>
+          )}
 
           {!autenticado && !semEstoque && (
             <p className="mt-3 text-xs text-tinta-500">

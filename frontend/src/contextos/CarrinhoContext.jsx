@@ -32,6 +32,7 @@ export function ProvedorCarrinho({ children }) {
 }
 
 function CarrinhoDaSessao({ children, usuarioId, verificandoSessao }) {
+  const { encerrarSessao } = useAuth();
   const [carrinho, setCarrinho] = useState(VAZIO);
   const [carregando, setCarregando] = useState(Boolean(usuarioId));
   const [erro, setErro] = useState(null);
@@ -49,12 +50,15 @@ function CarrinhoDaSessao({ children, usuarioId, verificandoSessao }) {
       if (atual === versao.current) setCarrinho(dados);
       return dados;
     } catch (falha) {
-      if (atual === versao.current) setErro(falha);
+      if (atual === versao.current) {
+        if (falha.ehSessaoExpirada) encerrarSessao();
+        else setErro(falha);
+      }
       throw falha;
     } finally {
       if (atual === versao.current) setCarregando(false);
     }
-  }, []);
+  }, [encerrarSessao]);
 
   const recarregar = useCallback(async () => {
     if (!usuarioId) return;

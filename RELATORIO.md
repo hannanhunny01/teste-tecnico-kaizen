@@ -92,41 +92,39 @@ cliente. O principal fica apenas como seleção inicial do checkout.
 
 ## 3. Problemas que encontrei por conta própria
 
-*Os chamados não cobrem tudo. Liste aqui o que você encontrou sozinho —
-inclusive o que decidiu **não** corrigir. Repita o bloco quantas vezes precisar.*
-
-*Achar e documentar um problema conta a favor mesmo sem a correção. Deixar de
-relatar algo que você viu conta contra.*/
-
-### Problema 1
+### Problema 1 — Carrinho da conta anterior
 
 | | |
 |---|---|
-| **O que está errado** | |
-| **Como cheguei nele** | |
-| **Impacto** | *quem é afetado e como* |
-| **Corrigi?** | sim / não — e por quê |
-| **Arquivos alterados** | |
+| **O que está errado** | Outra aba mantinha a conta antiga. Respostas atrasadas do perfil e da consulta inicial da sessão também podiam restaurar esse usuário depois de um novo login. |
+| **Como cheguei nele** | Simulei duas contas, duas abas e respostas atrasadas. Depois de entrar na conta B, a tela voltava a mostrar a conta A. |
+| **Impacto** | Dados e carrinho na tela não correspondiam à sessão atual. |
+| **Corrigi?** | Sim. Sincronizei login/logout entre abas, ignorei respostas antigas e limpei a sessão quando o carrinho retorna 401. Conferi que o carrinho de A não aparece depois de entrar em B. |
+| **Arquivos alterados** | `AuthContext.jsx` e `CarrinhoContext.jsx`. |
 
-### Problema 2
-
-| | |
-|---|---|
-| **O que está errado** | |
-| **Como cheguei nele** | |
-| **Impacto** | |
-| **Corrigi?** | |
-| **Arquivos alterados** | |
-
-### Problema 3
+### Problema 2 — Produto já no carrinho
 
 | | |
 |---|---|
-| **O que está errado** | |
-| **Como cheguei nele** | |
-| **Impacto** | |
-| **Corrigi?** | |
-| **Arquivos alterados** | |
+| **O que está errado** | O botão continuava mostrando só "Adicionar", mesmo com a peça no carrinho ativo. |
+| **Como cheguei nele** | Conferi um produto com 2 unidades no carrinho. O card não mostrava isso. |
+| **Impacto** | O cliente não sabia o que já tinha colocado na lista. |
+| **Corrigi?** | Sim. Mostro a quantidade no carrinho e "Adicionar mais", no card e na página do produto. O indicador acompanha a troca de carrinho e a remoção de itens. |
+| **Arquivos alterados** | `CardProduto.jsx`, `Catalogo.jsx` e `Produto.jsx`. |
+
+### Problema 4 — Centavo perdido no cálculo
+
+| | |
+|---|---|
+| **O que está errado** | A conversão para centavos usava `Math.floor`. R$ 19,90 virava 1989 centavos por causa do ponto flutuante. |
+| **Como cheguei nele** | Conferi a conversão e um carrinho com 3 unidades de R$ 19,90. |
+| **Impacto** | Subtotais e valores salvos do pedido podiam ficar menores. |
+| **Corrigi?** | Sim. Troquei por `Math.round`. O carrinho retornou R$ 59,70 e o pedido gravou 5970 centavos. |
+| **Arquivos alterados** | `backend/src/lib/dinheiro.js`. |
+
+Conferi as mudanças com dados locais e respostas simuladas, sem criar arquivos
+de teste no repositório. Também conferi o carrinho normal, o lateral e o build
+do frontend.
 
 ---
 

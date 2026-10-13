@@ -192,6 +192,7 @@ export function Catalogo() {
               <CardProduto
                 key={produto.codigo}
                 produto={produto}
+                quantidadeNoCarrinho={carrinho.itens.find((item) => item.codigo_produto === produto.codigo)?.quantidade ?? 0}
                 aoAdicionar={adicionarAoCarrinho}
                 adicionando={adicionandoCodigo === produto.codigo}
                 ocupado={autenticado && (carregandoCarrinho || !carrinho.id)}
