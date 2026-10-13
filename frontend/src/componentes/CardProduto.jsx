@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { dinheiro } from '../api/cliente.js';
 
-export function CardProduto({ produto, aoAdicionar, adicionando = false, ocupado = false }) {
+export function CardProduto({ produto, aoAdicionar, adicionando = false, ocupado = false, quantidadeNoCarrinho = 0 }) {
   const semEstoque = produto.estoque === 0;
 
   return (
@@ -50,6 +50,12 @@ export function CardProduto({ produto, aoAdicionar, adicionando = false, ocupado
           )}
         </p>
 
+        {quantidadeNoCarrinho > 0 && (
+          <p className="mt-2 text-xs font-semibold text-marca-700" aria-live="polite">
+            {quantidadeNoCarrinho} no carrinho
+          </p>
+        )}
+
         <button
           type="button"
           onClick={() => aoAdicionar(produto)}
@@ -58,7 +64,7 @@ export function CardProduto({ produto, aoAdicionar, adicionando = false, ocupado
             text-white transition-colors hover:bg-marca-800
             disabled:cursor-not-allowed disabled:bg-tinta-200 disabled:text-tinta-600"
         >
-          {semEstoque ? 'Indisponível' : adicionando ? 'Adicionando...' : 'Adicionar'}
+          {semEstoque ? 'Indisponível' : adicionando ? 'Adicionando...' : quantidadeNoCarrinho > 0 ? 'Adicionar mais' : 'Adicionar'}
         </button>
       </div>
     </article>
